@@ -1,0 +1,23 @@
+[package]
+name = "crowsi-process-adapter"
+version = "0.10.0"
+edition = "2024"
+rust-version = "1.97.0"
+license = "Apache-2.0"
+description = "Physical process ownership through exact processkit; no domain policy or identity"
+publish = ["ecosystem-private"]
+include = ["src/**", "tests/**", "Cargo.toml", "README.md", "LICENSE", "NOTICE"]
+repository = "https://github.com/crowsi-net/crowsi-process-adapter"
+
+[workspace]
+
+[dependencies]
+processkit = { version = "=3.3.4", default-features = false, features = ["process-control"] }
+tokio = { version = "1.49", features = ["process", "time", "io-util"] }
+
+[dev-dependencies]
+tokio = { version = "1.49", features = ["macros", "rt", "io-util", "time", "process"] }
+
+[lints.rust]
+unsafe_code = "forbid"
+
