@@ -1,11 +1,12 @@
 [package]
+readme = "README.md"
 name = "crowsi-process-adapter"
 version = "0.10.0"
 edition = "2024"
 rust-version = "1.97.0"
 license = "Apache-2.0"
 description = "Physical process ownership through exact processkit; no domain policy or identity"
-publish = ["ecosystem-private"]
+publish = ["crates-io"]
 include = ["src/**", "tests/**", "Cargo.toml", "README.md", "LICENSE", "NOTICE"]
 repository = "https://github.com/crowsi-net/crowsi-process-adapter"
 
