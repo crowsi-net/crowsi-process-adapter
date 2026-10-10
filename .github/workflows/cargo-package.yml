@@ -1,0 +1,47 @@
+name: Verify independent Cargo package
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  cargo-package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      CARGO_BUILD_JOBS: '2'
+      CARGO_HOME: ${{ runner.temp }}/public-cargo-home
+      CARGO_TARGET_DIR: ${{ runner.temp }}/public-cargo-target
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - name: Install the declared Rust toolchain
+        run: rustup toolchain install 1.97 --profile minimal --component rustfmt --component clippy
+      - name: Check formatting and all-feature lints
+        run: |
+          cargo +1.97 fmt --all -- --check
+          cargo +1.97 clippy --locked --all-targets --all-features -- -D warnings
+      - name: Exercise behavioral and documentation tests
+        run: cargo +1.97 test --locked --all-features
+      - name: Generate and build the independent public package
+        run: cargo +1.97 package --locked --registry crates-io
+      - name: Record exact source and package bytes
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/outgoing"
+          cp "$CARGO_TARGET_DIR/package/crowsi-process-adapter-0.10.0.crate" "$GITHUB_WORKSPACE/outgoing/"
+          printf '%s\n' "$EXPECTED_SHA" > "$GITHUB_WORKSPACE/outgoing/source-sha.txt"
+          cd "$GITHUB_WORKSPACE/outgoing"
+          sha256sum crowsi-process-adapter-0.10.0.crate > SHA256SUMS
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: reviewed-cargo-package
+          path: outgoing/
+          if-no-files-found: error
+          retention-days: 3
