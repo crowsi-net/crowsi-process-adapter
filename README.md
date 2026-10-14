@@ -38,3 +38,6 @@ cargo test --locked
 `OwnedProcess::limit_evidence()` returns the underlying kernel evidence for requested whole-tree axes. An exit code or signal is not proof of which limit fired, and per-file limit events are not included in that evidence. Linux cgroup controller setup/delegation is an explicit runtime-environment responsibility; no host cgroup/controller provisioning is performed by the source tests.
 
 Tests use only temporary files and owned Linux children to verify finite file growth and unchanged parent limits. They do not claim whole-tree memory/CPU enforcement in an undelegated development environment. No Cloud account, service activation or registry release is performed. Source consumers need the matching accepted source; old published bytes with the same manifest version do not acquire these APIs.
+
+Dependency updates: [repository policy](docs/dependency-updates.md).
+Registry releases: [version tags and GitHub OIDC](docs/registry-release.md).

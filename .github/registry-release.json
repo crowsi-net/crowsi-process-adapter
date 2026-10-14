@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "repository": "crowsi-net/crowsi-process-adapter",
+  "defaultBranch": "main",
+  "requiredWorkflows": [
+    "cargo-package.yml",
+    "ci.yml",
+    "oss-policy.yml"
+  ],
+  "packages": [
+    {
+      "ecosystem": "cargo",
+      "manifest": "Cargo.toml",
+      "name": "crowsi-process-adapter",
+      "installDirectory": "."
+    }
+  ]
+}
