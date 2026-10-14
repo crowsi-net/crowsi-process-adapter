@@ -61,3 +61,7 @@ Schema definitions in the map remain owned by their canonical validator and
 consumers. An absent schema file means no separate schema file is declared; it does
 not mean the runtime interface has no validation. Do not introduce another common
 schema solely to mirror an implementation type.
+
+## Process resource policy
+
+The physical owner applies explicit resource budgets through processkit rather than reproducing OS enforcement. Whole-tree memory/process/CPU caps require supported delegation; unsupported requests are refused before execution. Per-file limits are inherited by descendants and do not bound aggregate disk. Kernel limit evidence stays distinct from exit-code guessing and from file-size observations. Credentials, grants, executable choice, runtime delegation and wall-clock deadline remain owner responsibilities.

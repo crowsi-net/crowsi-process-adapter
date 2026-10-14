@@ -3,7 +3,10 @@
 use processkit::{Outcome, OutputBufferPolicy, ProcessGroup, ProcessGroupOptions};
 use std::{ffi::OsString, io, path::PathBuf, time::Duration};
 use tokio::io::{AsyncReadExt, DuplexStream};
+mod budget;
 mod pipe;
+pub use budget::ProcessBudget;
+pub use processkit::{LimitEvidence, LimitVerdict};
 
 #[derive(Debug)]
 pub enum Error {
@@ -42,6 +45,7 @@ pub struct Launch {
     args: Vec<OsString>,
     env: Vec<(OsString, OsString)>,
     directory: Option<PathBuf>,
+    budget: Option<ProcessBudget>,
 }
 impl Launch {
     pub fn new(executable: impl Into<PathBuf>) -> Self {
@@ -50,6 +54,7 @@ impl Launch {
             args: Vec::new(),
             env: Vec::new(),
             directory: None,
+            budget: None,
         }
     }
     pub fn args(mut self, args: impl IntoIterator<Item = impl Into<OsString>>) -> Self {
@@ -64,7 +69,16 @@ impl Launch {
         self.directory = Some(directory.into());
         self
     }
+    /// Opt into strict whole-tree limits and/or a per-file size limit.
+    /// Unsupported enforcement fails before a child starts; no unbounded fallback.
+    pub fn budget(mut self, budget: ProcessBudget) -> Self {
+        self.budget = Some(budget);
+        self
+    }
     fn validate(&self) -> Result<(), Error> {
+        if let Some(budget) = self.budget {
+            budget.validate()?;
+        }
         let size = self.executable.as_os_str().len()
             + self.args.iter().map(|a| a.len()).sum::<usize>()
             + self
@@ -105,12 +119,20 @@ pub struct OwnedProcess {
     stop_output: processkit::CancellationToken,
 }
 impl OwnedProcess {
+    /// Kernel evidence for requested whole-tree axes; no inference from exit codes/signals.
+    /// Per-file rlimit events are not part of this evidence.
+    pub fn limit_evidence(&self) -> LimitEvidence {
+        self.group.limit_evidence()
+    }
     #[cfg(target_os = "linux")]
     pub async fn spawn(launch: Launch) -> Result<Self, Error> {
         launch.validate()?;
-        let group = ProcessGroup::with_options(
-            ProcessGroupOptions::default().shutdown_timeout(Duration::from_secs(2)),
-        )?;
+        let options = ProcessGroupOptions::default().shutdown_timeout(Duration::from_secs(2));
+        let options = match launch.budget {
+            Some(budget) => budget.options(options),
+            None => options,
+        };
+        let group = ProcessGroup::with_options(options)?;
         // Typed launcher arms parent-death before exec and closes its race.
         // The raw Child + setpriv candidate failed this gate and was removed.
         let (stdout, stdout_writer) = tokio::io::duplex(65536);
@@ -126,6 +148,9 @@ impl OwnedProcess {
             .output_buffer(OutputBufferPolicy::bounded(0).with_max_bytes(65536))
             .stdout_raw_tee(pipe::ClosingWriter::new(stdout_writer, stop_output.clone()))
             .stderr_raw_tee(pipe::ClosingWriter::new(stderr_writer, stop_output.clone()));
+        if let Some(bytes) = launch.budget.and_then(|budget| budget.max_file_bytes) {
+            command = command.rlimit(processkit::RlimitResource::FileSize, bytes, bytes);
+        }
         if let Some(directory) = launch.directory {
             command = command.current_dir(directory);
         }
