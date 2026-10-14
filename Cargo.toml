@@ -13,10 +13,11 @@ repository = "https://github.com/crowsi-net/crowsi-process-adapter"
 [workspace]
 
 [dependencies]
-processkit = { version = "=3.3.4", default-features = false, features = ["process-control"] }
+processkit = { version = "=3.3.4", default-features = false, features = ["process-control", "limits"] }
 tokio = { version = "1.49", features = ["process", "time", "io-util"] }
 
 [dev-dependencies]
+tempfile = "3.27.0"
 tokio = { version = "1.49", features = ["macros", "rt", "io-util", "time", "process"] }
 
 [lints.rust]

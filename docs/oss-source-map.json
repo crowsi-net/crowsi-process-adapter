@@ -13,7 +13,10 @@
         "features": {},
         "bins": [],
         "public_modules": [],
-        "public_reexports": [],
+        "public_reexports": [
+          "budget::ProcessBudget",
+          "processkit::{LimitEvidence, LimitVerdict}"
+        ],
         "implicit_bins": []
       },
       "declared_commands": {}
@@ -22,7 +25,8 @@
   "schema_definitions": [],
   "test_sources": [
     "src/lib.rs",
-    "tests/lifecycle.rs"
+    "tests/lifecycle.rs",
+    "tests/resource_budget.rs"
   ],
   "example_sources": [],
   "workflow_definitions": [
