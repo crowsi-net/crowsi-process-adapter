@@ -1,4 +1,6 @@
 [package]
+categories = ["os"]
+keywords = ["process-management", "process-supervision", "resource-limits", "linux", "rust"]
 readme = "README.md"
 name = "crowsi-process-adapter"
 version = "0.10.0"
