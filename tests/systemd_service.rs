@@ -5,7 +5,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 #[tokio::test(flavor = "current_thread")]
 #[ignore = "requires a running local systemd user manager with resource controllers"]
 async fn user_service_has_kernel_limits_and_clean_environment_before_payload() {
-    let launch=Launch::new("/bin/sh").args(["-c",r#"read line; test "$line" = synthetic-stdin; test -z "$UNSELECTED_CREDENTIAL"; cg=$(cut -d: -f3 /proc/self/cgroup); cat /sys/fs/cgroup$cg/memory.max; cat /sys/fs/cgroup$cg/pids.max; cat /sys/fs/cgroup$cg/cpu.max"#]).env("PATH","/usr/bin:/bin").budget(ProcessBudget{max_memory_bytes:Some(536870912),max_processes:Some(32),cpu_quota:Some(1.0),max_file_bytes:Some(8388608)});
+    let launch=Launch::new("/bin/sh").args(["-c",r#"set -eu; read line; test "$line" = synthetic-stdin; test -z "${UNSELECTED_CREDENTIAL:-}"; cg=$(cut -d: -f3 /proc/self/cgroup); cat /sys/fs/cgroup$cg/memory.max; cat /sys/fs/cgroup$cg/pids.max; cat /sys/fs/cgroup$cg/cpu.max"#]).env("PATH","/usr/bin:/bin").budget(ProcessBudget{max_memory_bytes:Some(536870912),max_processes:Some(32),cpu_quota:Some(1.0),max_file_bytes:Some(8388608)});
     let mut p = Service::spawn_public_environment(launch, Duration::from_secs(10))
         .await
         .unwrap();
