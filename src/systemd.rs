@@ -42,6 +42,7 @@ impl Service {
             "--pipe".into(),
             "--collect".into(),
             "--service-type=exec".into(),
+            "--expand-environment=no".into(),
             format!("--unit={unit}").into(),
             format!("--property=MemoryMax={memory}").into(),
             "--property=MemorySwapMax=0".into(),
