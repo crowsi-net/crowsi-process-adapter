@@ -15,7 +15,7 @@ repository = "https://github.com/crowsi-net/crowsi-process-adapter"
 [workspace]
 
 [dependencies]
-getrandom = "=0.3.4"
+getrandom = "=0.4.3"
 processkit = { version = "=3.3.4", default-features = false, features = ["process-control", "limits"] }
 tokio = { version = "1.49", features = ["process", "time", "io-util"] }
 
