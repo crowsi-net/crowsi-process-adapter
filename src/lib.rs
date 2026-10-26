@@ -274,3 +274,6 @@ mod failure_tests {
         assert!(process.shutdown(Duration::ZERO).await.is_err());
     }
 }
+
+#[cfg(target_os = "linux")]
+pub mod systemd;

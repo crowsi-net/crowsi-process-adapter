@@ -3,7 +3,7 @@ categories = ["os"]
 keywords = ["process-management", "process-supervision", "resource-limits", "linux", "rust"]
 readme = "README.md"
 name = "crowsi-process-adapter"
-version = "0.10.0"
+version = "0.11.0"
 edition = "2024"
 rust-version = "1.97.0"
 license = "Apache-2.0"
@@ -15,6 +15,7 @@ repository = "https://github.com/crowsi-net/crowsi-process-adapter"
 [workspace]
 
 [dependencies]
+getrandom = "=0.3.4"
 processkit = { version = "=3.3.4", default-features = false, features = ["process-control", "limits"] }
 tokio = { version = "1.49", features = ["process", "time", "io-util"] }
 

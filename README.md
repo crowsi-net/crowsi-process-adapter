@@ -41,3 +41,22 @@ Tests use only temporary files and owned Linux children to verify finite file gr
 
 Dependency updates: [repository policy](docs/dependency-updates.md).
 Registry releases: [version tags and GitHub OIDC](docs/registry-release.md).
+
+Version 0.11.0 adds the explicit Linux `systemd::Service` backend for unprivileged
+user managers where processkit cannot enforce controller limits. It requires all
+budget axes and a 50 ms–120 s service lifetime. systemd applies MemoryMax,
+MemorySwapMax=0, TasksMax, CPUQuota, LimitFSIZE and LimitCORE before ExecStart;
+KillMode=control-group and RuntimeMaxSec bound the service independently of the
+client process. There is no automatic fallback from strict processkit limits.
+
+`spawn_public_environment` takes **public environment values only** (configuration
+is visible in the service's ExecStart); credentials must travel through stdin.
+`env -i` clears manager environment before the payload. Pipes are attached rather
+than journal output. A random per-invocation unit name is the ownership handle;
+shutdown addresses that exact unit, never a persisted PID or a global scan.
+Ordinary drop schedules best-effort stop; host crash/runtime destruction can leave
+the service running until RuntimeMaxSec plus its one-second stop timeout. This is
+an explicit bounded-lifetime guarantee, not immediate parent-death termination.
+Local systemd user-manager access and controller availability remain prerequisites.
+The ignored acceptance test reads actual cgroup controller files before payload
+completion; it must be run explicitly on the target host.
